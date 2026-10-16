@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const conexion = require("./db"); // Importamos la conexión creada en db.js
@@ -78,7 +79,6 @@ app.delete("/productos/:id", (req, res) => {
     res.json({ mensaje: "Producto eliminado correctamente" });
   });
 });
-
 // 5. Obtener todos los mensajes (READ)
 app.get("/mensajes", (req, res) => {
     const sql = "SELECT * FROM mensaje ORDER BY id DESC";
@@ -109,9 +109,7 @@ app.post("/mensajes", (req, res) => {
             console.error("Error al guardar mensaje:", error);
 
             if (error.code === "ER_DUP_ENTRY") {
-                return res.status(409).json({
-                    mensaje: "Este correo ya está registrado. Utiliza otro correo."
-                });
+                return res.status(409).json({ mensaje: "Este correo ya está registrado." });
             }
 
             return res.status(500).json({ mensaje: "Error al guardar el mensaje" });
@@ -124,7 +122,23 @@ app.post("/mensajes", (req, res) => {
     });
 });
 
+// 7. Eliminar un mensaje (DELETE)
+app.delete("/mensajes/:id", (req, res) => {
+    const id = req.params.id;
+    const sql = "DELETE FROM mensaje WHERE id = ?";
+
+    conexion.query(sql, [id], (error, resultado) => {
+        if (error) {
+            console.error("Error al eliminar mensaje:", error);
+            return res.status(500).json({ mensaje: "Error al eliminar el mensaje de contacto" });
+        }
+        res.json({ mensaje: "Mensaje eliminado correctamente" });
+    });
+});
+
 // Iniciar servidor en el puerto 3000
-app.listen(3000, () => {
-    console.log("Servidor ejecutándose en http://localhost:3000");
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(` Servidor ejecutándose en http://localhost:${PORT}`);
 });
